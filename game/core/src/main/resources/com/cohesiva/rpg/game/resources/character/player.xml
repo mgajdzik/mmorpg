@@ -1,0 +1,22 @@
+<assetLibrary name="player">
+	<assetGroup name="clothes" type="object">
+		<image name="clothes.png" tileWidth="128" tileHeight="128"
+			tileHorizontalOffset="0" tileVerticalOffset="0" numberOfTiles="288"
+			width="4096" height="1024" renderOffsetY="12" renderOffsetX="-32" />
+	</assetGroup>
+	<assetGroup name="male_head1" type="object">
+		<image name="male_head1.png" tileWidth="128" tileHeight="128"
+			tileHorizontalOffset="0" tileVerticalOffset="0" numberOfTiles="288"
+			width="4096" height="1024" renderOffsetY="12" renderOffsetX="-32" />
+	</assetGroup>
+	<assetGroup name="shield" type="object">
+		<image name="shield.png" tileWidth="128" tileHeight="128"
+			tileHorizontalOffset="0" tileVerticalOffset="0" numberOfTiles="288"
+			width="4096" height="1024" renderOffsetY="12" renderOffsetX="-32" />
+	</assetGroup>
+	<assetGroup name="longsword" type="object">
+		<image name="longsword.png" tileWidth="128" tileHeight="128"
+			tileHorizontalOffset="0" tileVerticalOffset="0" numberOfTiles="288"
+			width="4096" height="1024" renderOffsetY="12" renderOffsetX="-32" />
+	</assetGroup>
+</assetLibrary>

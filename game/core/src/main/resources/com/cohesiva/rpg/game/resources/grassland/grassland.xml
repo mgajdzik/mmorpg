@@ -1,0 +1,36 @@
+<assetLibrary name="grassland">
+	<assetGroup name="grass" type="ground">
+		<image name="grassland.png" tileWidth="64" tileHeight="32"
+			tileHorizontalOffset="0" tileVerticalOffset="96" numberOfTiles="16"
+			width="1024" height="1024" />
+	</assetGroup>
+	<assetGroup name="road" type="ground">
+		<image name="grassland.png" tileWidth="64" tileHeight="32"
+			tileHorizontalOffset="0" tileVerticalOffset="224" numberOfTiles="16"
+			width="1024" height="1024" />
+	</assetGroup>
+	<assetGroup name="hill" type="ground">
+		<image name="grassland.png" tileWidth="64" tileHeight="128"
+			tileHorizontalOffset="0" tileVerticalOffset="256" numberOfTiles="24"
+			moveable="false" width="1024" height="1024" />
+	</assetGroup>
+	<assetGroup name="objects" type="object">
+		<image name="grassland.png" tileWidth="64" tileHeight="128"
+			tileHorizontalOffset="0" tileVerticalOffset="640" numberOfTiles="16"
+			moveable="false" width="1024" height="1024" />
+		<image name="grassland.png" tileWidth="64" tileHeight="128"
+			tileHorizontalOffset="0" tileVerticalOffset="896" numberOfTiles="16"
+			moveable="false" width="1024" height="1024" />
+	</assetGroup>
+	<assetGroup name="bushes" type="object">
+		<image name="grassland.png" tileWidth="64" tileHeight="128"
+			tileHorizontalOffset="0" tileVerticalOffset="768" numberOfTiles="16"
+			width="1024" height="1024" />
+	</assetGroup>
+	<assetGroup name="trees" type="object">
+		<image name="grassland_trees.png" tileWidth="128" tileHeight="256"
+			tileHorizontalOffset="0" tileVerticalOffset="0" numberOfTiles="16"
+			width="1024" height="512" renderOffsetY="4" renderOffsetX="-28"
+			moveable="false" />
+	</assetGroup>
+</assetLibrary>
