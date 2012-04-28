@@ -1,6 +1,6 @@
-package com.cohesiva.rpg.game.core;
+package com.cohesiva.rpg.game.core.objects;
 
-public class Tile {
+public class TileDefinition {
 	private int width;
 	private int height;
 	private int assetVerticalOffset;

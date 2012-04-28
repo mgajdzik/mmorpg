@@ -5,6 +5,11 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
+import com.cohesiva.rpg.game.core.objects.AbstractIsoObject;
+import com.cohesiva.rpg.game.core.objects.Player;
+import com.cohesiva.rpg.game.core.objects.Tile;
+import com.cohesiva.rpg.game.core.objects.TileDefinition;
+
 import playn.core.Image;
 import playn.core.Surface;
 import pythagoras.i.Dimension;
@@ -24,7 +29,7 @@ public class MapView {
 
 	private Map<Point, Integer> coordinatesToIndex = new HashMap<Point, Integer>();
 
-	private List<IsoObject> objectsToDraw = new LinkedList<IsoObject>();
+	private List<AbstractIsoObject> objectsToDraw = new LinkedList<AbstractIsoObject>();
 
 	public MapView(Player player, TileMap map, Dimension clientViewSize) {
 		this.player = player;
@@ -73,11 +78,11 @@ public class MapView {
 	public void paint(Surface surface, Integer layerNumber) {
 		surface.clear();
 		MapCoordinates playerCoordinates = player.getCoordinates();
-		Point shiftAgainstCenterOfCurrentTile = player.getShiftAgainstCenterOfCurrentTile();
+		Point shiftAgainstCenterOfCurrentTile = player.getShiftAgainstCenterOfCurrentLocation();
 		drawGroundTiles(surface, playerCoordinates, shiftAgainstCenterOfCurrentTile);
 		drawObjects(surface, playerCoordinates, shiftAgainstCenterOfCurrentTile);
-		// surface.drawLine(clientViewSize.width / 2, 0, clientViewSize.width / 2, clientViewSize.height, 1);
-		// surface.drawLine(0, clientViewSize.height / 2, clientViewSize.width, clientViewSize.height / 2, 1);
+//		 surface.drawLine(clientViewSize.width / 2, 0, clientViewSize.width / 2, clientViewSize.height, 1);
+//		 surface.drawLine(0, clientViewSize.height / 2, clientViewSize.width, clientViewSize.height / 2, 1);
 	}
 
 	private void drawGroundTiles(Surface surface, MapCoordinates centerOnCoordinates, Point shiftAgainstCenterOfCurrentTile) {
@@ -89,12 +94,13 @@ public class MapView {
 		int startY = y;
 		objectsToDraw.clear();
 		List<Image> images = TileLibrary.getImages();
-		Map<MapCoordinates, IsoObject> objects = map.getObjects();
+		Map<MapCoordinates, AbstractIsoObject> objects = map.getObjects();
 		for (int i = 0; i < guiMapCoordinatesArray.length; i++) {
 			if (x > 0 && x < GameClient.FIELD_WIDTH && y > 0 && y < GameClient.FIELD_HEIGHT) {
 				GuiMapCoordinates tileCoordinates = guiMapCoordinatesArray[i];
 				Tile tile = map.getTileMap()[x][y];
-				IsoObject isoObject = objects.get(new MapCoordinates(x, y));
+				TileDefinition tileDefinition = tile.getTileDefinitions().get(0);
+				AbstractIsoObject isoObject = objects.get(new MapCoordinates(x, y));
 				if (isoObject != null) {
 					objectsToDraw.add(isoObject);
 				}
@@ -102,15 +108,15 @@ public class MapView {
 					objectsToDraw.add(player);
 				}
 				int dx = tileCoordinates.x() + shiftAgainstCenterOfCurrentTile.x;
-				int dy = tileCoordinates.y() - tile.getHeight() + GameClient.TILE_HEIGHT + shiftAgainstCenterOfCurrentTile.y;
+				int dy = tileCoordinates.y() - tileDefinition.getHeight() + GameClient.TILE_HEIGHT + shiftAgainstCenterOfCurrentTile.y;
 				int tileWidth = GameClient.TILE_WIDTH;
-				int height = tile.getHeight();
+				int height = tileDefinition.getHeight();
 //				if (isoObject != null) {
 				if (dx + tileWidth >= 0 && dy + height > 0 && dx < clientViewSize.width & dy < clientViewSize.height) {
-					int imageIndex = tile.getImageIndex();
+					int imageIndex = tileDefinition.getImageIndex();
 					Image image = images.get(imageIndex);
-					surface.drawImage(image, dx, dy, tileWidth, height, tile.getAssetHorizontalOffset(), tile.getAssetVerticalOffset(),
-							tile.getWidth(), height);
+					surface.drawImage(image, dx, dy, tileWidth, height, tileDefinition.getAssetHorizontalOffset(), tileDefinition.getAssetVerticalOffset(),
+							tileDefinition.getWidth(), height);
 				}
 //			}
 
@@ -132,7 +138,7 @@ public class MapView {
 		int startMapX = centerOnCoordinates.x() - dimensionOfTilesToDraw / 2;
 		int startMapY = centerOnCoordinates.y() - dimensionOfTilesToDraw / 2;
 		List<Image> images = TileLibrary.getImages();
-		for (IsoObject isoObject : objectsToDraw) {
+		for (AbstractIsoObject isoObject : objectsToDraw) {
 			Point coordinates = isoObject.getCoordinates();
 			int x = coordinates.x;
 			int y = coordinates.y;
@@ -145,9 +151,9 @@ public class MapView {
 					continue;
 				}
 				GuiMapCoordinates tileCoordinates = guiMapCoordinatesArray[i];
-				for (Tile tile : isoObject.getTiles()) {
+				for (TileDefinition tile : isoObject.getTileDefinitions()) {
 					Image image = images.get(tile.getImageIndex());
-					Point shiftOfTileAgainstCenterOfCurrentTile = isoObject.getShiftAgainstCenterOfCurrentTile();
+					Point shiftOfTileAgainstCenterOfCurrentTile = isoObject.getShiftAgainstCenterOfCurrentLocation();
 					int xOnScreen = tileCoordinates.x() + shiftAgainstCenterOfCurrentTile.x + tile.getRenderOffsetX()
 							- shiftOfTileAgainstCenterOfCurrentTile.x;
 					int yOnScreen = tileCoordinates.y() - tile.getHeight() + GameClient.TILE_HEIGHT + shiftAgainstCenterOfCurrentTile.y

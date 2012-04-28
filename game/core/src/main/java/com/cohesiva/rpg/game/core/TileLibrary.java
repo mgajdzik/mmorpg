@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import com.cohesiva.rpg.game.core.objects.TileDefinition;
+import com.cohesiva.rpg.game.core.objects.TileType;
+
 import playn.core.Image;
 import playn.core.Json;
 import playn.core.Json.Array;
@@ -24,7 +27,7 @@ public class TileLibrary {
 	
 	private static List<Image> images = new ArrayList<Image>();
 
-	private Map<String, Map<String, List<Tile>>> tileLibraries = new HashMap<String, Map<String, List<Tile>>>();
+	private Map<String, Map<String, List<TileDefinition>>> tileLibraries = new HashMap<String, Map<String, List<TileDefinition>>>();
 
 	public static void createLibrary(final ResourceCallback<TileLibrary> callback) {
 		if (instance != null && success == true) {
@@ -97,12 +100,12 @@ public class TileLibrary {
 		Object assetLibraryJson = assetConfig.getObject("assetLibrary");
 		String libraryName = assetLibraryJson.getObject("@attributes").getString("name");
 		Array assetGroupsJson = assetLibraryJson.getArray("assetGroup");
-		HashMap<String, List<Tile>> library = createLibrary(libraryName, filePath, assetGroupsJson);
+		HashMap<String, List<TileDefinition>> library = createLibrary(libraryName, filePath, assetGroupsJson);
 		instance.tileLibraries.put(libraryName, library);
 	}
 
-	private static HashMap<String, List<Tile>> createLibrary(String libraryName, String filePath, Array assetGroupsJson) {
-		HashMap<String, List<Tile>> library = new HashMap<String, List<Tile>>();
+	private static HashMap<String, List<TileDefinition>> createLibrary(String libraryName, String filePath, Array assetGroupsJson) {
+		HashMap<String, List<TileDefinition>> library = new HashMap<String, List<TileDefinition>>();
 		for (int i = 0; i < assetGroupsJson.length(); i++) {
 			Object assetGroupJson = assetGroupsJson.getObject(i);
 			String assetGroupName = assetGroupJson.getObject("@attributes").getString("name");
@@ -111,8 +114,8 @@ public class TileLibrary {
 		return library;
 	}
 
-	private static List<Tile> createAssetGroup(String libraryName, String assetGroupName, String filePath, Object assetGroupJson) {
-		ArrayList<Tile> assetGroup = new ArrayList<Tile>();
+	private static List<TileDefinition> createAssetGroup(String libraryName, String assetGroupName, String filePath, Object assetGroupJson) {
+		ArrayList<TileDefinition> assetGroup = new ArrayList<TileDefinition>();
 		TileType tileType = TileType.valueOf(assetGroupJson.getObject("@attributes").getString("type").toUpperCase());
 		List<Object> imagesJson = new ArrayList<Json.Object>();
 		String path = filePath.substring(0, filePath.lastIndexOf("/") + 1);
@@ -142,7 +145,7 @@ public class TileLibrary {
 			int renderOffsetY = Integer.parseInt(attributes.getString("renderOffsetY", "0"));
 			boolean moveable = !attributes.containsKey("moveable") || "true".equalsIgnoreCase(attributes.getString("moveable"));
 			for (int i = 0; i < numberOfTiles; i++) {
-				Tile tile = new Tile();
+				TileDefinition tile = new TileDefinition();
 				tile.setAssetHorizontalOffset(tileHorizontalOffset);
 				tile.setAssetVerticalOffset(tileVerticalOffset);
 				tile.setHeight(tileHeight);
@@ -163,7 +166,7 @@ public class TileLibrary {
 		return assetGroup;
 	}
 
-	public Map<String, Map<String, List<Tile>>> getTileLibraries() {
+	public Map<String, Map<String, List<TileDefinition>>> getTileLibraries() {
 		return tileLibraries;
 	}
 

@@ -3,6 +3,7 @@ package com.cohesiva.rpg.game.core;
 import java.util.HashMap;
 import java.util.Map;
 
+import pythagoras.i.IPoint;
 import pythagoras.i.Point;
 
 public enum Direction {
@@ -27,5 +28,9 @@ public enum Direction {
 			}
 		}
 		return pointToDirection.get(new Point(dx, dy));
+	}
+	
+	public IPoint getPoint() {
+		return point;
 	}
 }

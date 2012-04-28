@@ -5,6 +5,11 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 
+import com.cohesiva.rpg.game.core.objects.AbstractIsoObject;
+import com.cohesiva.rpg.game.core.objects.SimpleIsoObject;
+import com.cohesiva.rpg.game.core.objects.Tile;
+import com.cohesiva.rpg.game.core.objects.TileDefinition;
+
 import playn.core.PlayN;
 import playn.core.ResourceCallback;
 
@@ -16,7 +21,7 @@ public class TileMap {
 
 	private TileLibrary tileLibrary;
 
-	private Map<MapCoordinates, IsoObject> objects = new HashMap<MapCoordinates, IsoObject>();
+	private Map<MapCoordinates, AbstractIsoObject> objects = new HashMap<MapCoordinates, AbstractIsoObject>();
 
 	public Tile[][] getTileMap() {
 		return tiles;
@@ -50,14 +55,14 @@ public class TileMap {
 	}
 
 	private void fillMap(ResourceCallback<TileMap> callback) {
-		Map<String, List<Tile>> grassland = tileLibrary.getTileLibraries().get("grassland");
+		Map<String, List<TileDefinition>> grassland = tileLibrary.getTileLibraries().get("grassland");
 		Random random = new Random();
 		for (int x = 0; x < GameClient.FIELD_WIDTH; x++) {
 			for (int y = 0; y < GameClient.FIELD_HEIGHT; y++) {
 				if (random.nextInt(1000) < 995) {
-					tiles[x][y] = grassland.get("grass").get(random.nextInt(16));
+					tiles[x][y] = new Tile(grassland.get("grass").get(random.nextInt(16)));
 				} else {
-					tiles[x][y] = grassland.get("road").get(random.nextInt(16));
+					tiles[x][y] = new Tile(grassland.get("road").get(random.nextInt(16)));
 				}
 			}
 		}
@@ -68,9 +73,9 @@ public class TileMap {
 			if (objects.containsKey(mapCoordinates)) {
 				continue;
 			}
-			IsoObject isoObject = new IsoObject();
+			SimpleIsoObject isoObject = new SimpleIsoObject();
 			isoObject.setCoordinates(mapCoordinates);
-			isoObject.addTile(grassland.get("trees").get(random.nextInt(16)));
+			isoObject.setTileDefinition(grassland.get("trees").get(random.nextInt(16)));
 			objects.put(mapCoordinates, isoObject);
 		}
 
@@ -81,9 +86,9 @@ public class TileMap {
 			if (objects.containsKey(mapCoordinates)) {
 				continue;
 			}
-			IsoObject isoObject = new IsoObject();
+			SimpleIsoObject isoObject = new SimpleIsoObject();
 			isoObject.setCoordinates(mapCoordinates);
-			isoObject.addTile(grassland.get("bushes").get(random.nextInt(16)));
+			isoObject.setTileDefinition(grassland.get("bushes").get(random.nextInt(16)));
 			objects.put(mapCoordinates, isoObject);
 		}
 
@@ -94,15 +99,15 @@ public class TileMap {
 			if (objects.containsKey(mapCoordinates)) {
 				continue;
 			}
-			IsoObject isoObject = new IsoObject();
+			SimpleIsoObject isoObject = new SimpleIsoObject();
 			isoObject.setCoordinates(mapCoordinates);
-			isoObject.addTile(grassland.get("objects").get(random.nextInt(16)));
+			isoObject.setTileDefinition(grassland.get("objects").get(random.nextInt(16)));
 			objects.put(mapCoordinates, isoObject);
 		}
 		callback.done(this);
 	}
 
-	public Map<MapCoordinates, IsoObject> getObjects() {
+	public Map<MapCoordinates, AbstractIsoObject> getObjects() {
 		return objects;
 	}
 
@@ -110,7 +115,7 @@ public class TileMap {
 		if (tiles[newCoordinates.x][newCoordinates.y].isBlocking()) {
 			return false;
 		}
-		IsoObject isoObject = objects.get(newCoordinates);
+		AbstractIsoObject isoObject = objects.get(newCoordinates);
 		if (isoObject != null) {
 			return !isoObject.isBlocking();
 		}
