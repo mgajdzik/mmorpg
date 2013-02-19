@@ -27,7 +27,7 @@ public class CommandQueue {
 				playerCommands.add(command);
 			}
 		} else {
-
+			playerCommands.add(command);
 		}
 	}
 	

@@ -104,6 +104,11 @@ public class MapView {
 				if (isoObject != null) {
 					objectsToDraw.add(isoObject);
 				}
+				for (Player player : GameClient.getPlayers().values()) {
+					if (player.getCoordinates().x == x && player.getCoordinates().y == y) {
+						objectsToDraw.add(player);
+					}
+				}
 				if (centerOnCoordinates.x == x && centerOnCoordinates.y == y) {
 					objectsToDraw.add(player);
 				}

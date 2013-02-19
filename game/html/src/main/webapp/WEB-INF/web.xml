@@ -13,6 +13,7 @@
 	<servlet>
 		<servlet-name>ws</servlet-name>
 		<servlet-class>com.cohesiva.rpg.server.WebSocketServlet</servlet-class>
+		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet-mapping>
 		<servlet-name>ws</servlet-name>

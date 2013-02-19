@@ -3,23 +3,29 @@ package com.cohesiva.rpg.game.core;
 import static playn.core.PlayN.graphics;
 import static playn.core.PlayN.keyboard;
 
-import com.cohesiva.rpg.game.core.command.CommandQueue;
-import com.cohesiva.rpg.game.core.command.MoveCommand;
-import com.cohesiva.rpg.game.core.objects.Player;
+import java.nio.ByteBuffer;
+import java.util.HashMap;
+import java.util.Map;
 
 import playn.core.CanvasImage;
 import playn.core.Game;
 import playn.core.ImmediateLayer;
+import playn.core.Json.Object;
 import playn.core.Key;
 import playn.core.Keyboard;
 import playn.core.Keyboard.Event;
 import playn.core.Keyboard.Listener;
 import playn.core.Keyboard.TypedEvent;
+import playn.core.Net.WebSocket;
 import playn.core.PlayN;
 import playn.core.ResourceCallback;
 import playn.core.Surface;
-import playn.core.WebSocket;
 import pythagoras.i.Dimension;
+
+import com.cohesiva.rpg.game.core.command.CommandQueue;
+import com.cohesiva.rpg.game.core.command.MoveCommand;
+import com.cohesiva.rpg.game.core.command.MovetoCommand;
+import com.cohesiva.rpg.game.core.objects.Player;
 
 public class GameClient implements Game, Listener {
 	private static double renderingTime;
@@ -34,27 +40,25 @@ public class GameClient implements Game, Listener {
 	private int[] frameRates = new int[10];
 	private int index;
 	private Player player;
+	private static Map<Integer, Player> players = new HashMap<Integer, Player>();
 
 	private int moveRight;
 	private int moveDown;
 	private MapView mapView;
 
-	private WebSocket webSocket;
+	private static WebSocket webSocket;
 
 	private CommandQueue commandQueue;
+	private ImmediateLayer gameLayer;
+
+	private MainMessageHandler mainMessageHandler;
+
+	private boolean initialized = false;
 
 	@Override
 	public void init() {
 		final Dimension sizeInPixels = new Dimension(800, 600);
-
-		graphics().setSize(sizeInPixels.width(), sizeInPixels.height());
-
-		keyboard().setListener(this);
-
 		commandQueue = new CommandQueue();
-
-		// webSocket = PlayN.net().createWebSocket(
-		// "ws://localhost:8080/websocket/ws");
 
 		TileMap map = TileMap.getInstance();
 		map.initMapWithRandomElements(new ResourceCallback<TileMap>() {
@@ -67,13 +71,104 @@ public class GameClient implements Game, Listener {
 			public void done(TileMap map) {
 				initPlayer();
 				mapView = new MapView(player, map, sizeInPixels);
-				turn = new Turn();
-				turn.setTurnTimestamp(PlayN.currentTime());
-				graphics().rootLayer().add(createGameLayer(mapView, 0));
+				gameLayer = createGameLayer(mapView, 0);
+				registerInServer();
+				registerHandlers();
 			}
 
 		});
 
+	}
+
+	protected void registerHandlers() {
+		mainMessageHandler.register("move", new MessageHandler() {
+			@Override
+			public void onMessage(Object message) {
+				int playerId = message.getInt("id");
+				Player player = players.get(playerId);
+				if (player == null) {
+					player = createNewPlayer(playerId);
+				}
+				TemporalCoordinates from = new TemporalCoordinates();
+				Object fromJson = message.getObject("start");
+				from.setLocation(fromJson.getInt("x"), fromJson.getInt("y"));
+				Turn turnStart = new Turn();
+				turnStart.setTurnNumber(fromJson.getInt("turn"));
+				from.setTurn(turnStart);
+				TemporalCoordinates to = new TemporalCoordinates();
+				Object toJson = message.getObject("end");
+				to.setLocation(toJson.getInt("x"), toJson.getInt("y"));
+				Turn turnEnd = new Turn();
+				turnEnd.setTurnNumber(toJson.getInt("turn"));
+				to.setTurn(turnEnd);
+				commandQueue.addCommand(new MovetoCommand(from, to, player));
+			}
+		});
+	}
+
+	protected Player createNewPlayer(int playerId) {
+		Player player = new Player();
+		player.setCoordinates(new MapCoordinates(FIELD_WIDTH / 2, FIELD_HEIGHT / 2));
+		player.setClothes(TileLibrary.getInstance().getTileLibraries().get("player").get("clothes"));
+		player.setHead(TileLibrary.getInstance().getTileLibraries().get("player").get("male_head1"));
+		player.setShield(TileLibrary.getInstance().getTileLibraries().get("player").get("shield"));
+		player.setSword(TileLibrary.getInstance().getTileLibraries().get("player").get("longsword"));
+		player.setId(playerId);
+		players.put(playerId, player);
+		return player;
+	}
+
+	private void registerInServer() {
+		mainMessageHandler = new MainMessageHandler();
+		mainMessageHandler.register("register", new MessageHandler() {
+			@Override
+			public void onMessage(Object message) {
+				int playerId = message.getInt("id");
+				int turnNumber = message.getInt("turn");
+				player.setId(playerId);
+				turn = new Turn();
+				turn.setTurnTimestamp(PlayN.currentTime());
+				turn.setTurnNumber(turnNumber);
+				startGame();
+			}
+		});
+		webSocket = PlayN.net().createWebSocket("ws://localhost:8080/websocket/ws", new WebSocket.Listener() {
+
+			@Override
+			public void onTextMessage(String msg) {
+				mainMessageHandler.onMessage(msg);
+			}
+
+			@Override
+			public void onOpen() {
+				webSocket.send(new RegisterPlayer().toString());
+			}
+
+			@Override
+			public void onError(String reason) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onDataMessage(ByteBuffer msg) {
+				// TODO Auto-generated method stub
+
+			}
+
+			@Override
+			public void onClose() {
+				// TODO Auto-generated method stub
+
+			}
+		});
+
+	}
+
+	private void startGame() {
+		graphics().rootLayer().add(gameLayer);
+		keyboard().setListener(this);
+		initialized = true;
 	}
 
 	private void initPlayer() {
@@ -97,7 +192,7 @@ public class GameClient implements Game, Listener {
 
 	@Override
 	public void paint(float alpha) {
-		
+
 	}
 
 	private int avarageFrameRate() {
@@ -110,18 +205,21 @@ public class GameClient implements Game, Listener {
 
 	@Override
 	public void update(float delta) {
-		updateRenderingTime();
-		updateTurn();
-		commandQueue.update();
-		updatePlayerMovement();
-		commandQueue.performCommands(turn);
+		if (initialized) {
+			updateRenderingTime();
+			updateTurn();
+			commandQueue.update();
+			updatePlayerMovement();
+			commandQueue.performCommands(turn);
+		}
+
 	}
 
 	private void updateRenderingTime() {
 		double oldRenderingTime = renderingTime;
 		renderingTime = PlayN.currentTime();
 		frameRates[index] = (int) (1000 / (renderingTime - oldRenderingTime));
-		index = (++index) % 10;		
+		index = (++index) % 10;
 	}
 
 	private void updateTurn() {
@@ -212,5 +310,13 @@ public class GameClient implements Game, Listener {
 
 	public static Turn getTurn() {
 		return turn;
+	}
+
+	public static void sendMessage(String message) {
+		webSocket.send(message);
+	}
+
+	public static Map<Integer, Player> getPlayers() {
+		return players;
 	}
 }

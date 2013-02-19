@@ -1,5 +1,6 @@
 package com.cohesiva.rpg.game.core.command;
 
+import playn.core.Json.Writer;
 import playn.core.PlayN;
 import pythagoras.i.IPoint;
 import pythagoras.i.Point;
@@ -32,24 +33,23 @@ public class MoveCommand implements Command {
 		finished = false;
 	}
 
+	protected Turn createStartTime() {
+		return GameClient.getTurn();
+	}
+	
 	@Override
 	public CommandHandle perform() {
-		startTime = GameClient.getTurn();
+		startTime = createStartTime();
 		objectToMove.setDirection(direction);
-		MapCoordinates coordinates = objectToMove.getCoordinates();
-		destination = new MapCoordinates(coordinates);
-		IPoint point = direction.getPoint();
-		destination.x += point.x();
-		destination.y += point.y();
-		if (!TileMap.getInstance().canMove(destination)) {
-			return null;
-		}
-		PlayN.log().info("moving");
-		endTime = new Turn();
-		int turnsPerMovement = getDurationInTurns();
-		endTime.setTurnNumber(startTime.getTurnNumber() + turnsPerMovement);
+		destination = createDestination();
+		updateObjectToMoveBeforeStart();
+//		if (!TileMap.getInstance().canMove(destination)) {
+//			return null;
+//		}
+		endTime = createEndTime();
 		objectToMove.setMoving(true);
-		movementTimeInMilis = turnsPerMovement * Turn.getTimeDurationMilis();
+		movementTimeInMilis = createMovementTimeInMilis();
+		sendMessage();
 		return new CommandHandle() {
 
 			@Override
@@ -69,6 +69,53 @@ public class MoveCommand implements Command {
 			
 
 		};
+	}
+
+	protected void updateObjectToMoveBeforeStart() {
+	}
+
+	protected long createMovementTimeInMilis() {
+		return getDurationInTurns() * Turn.getTimeDurationMilis();
+	}
+
+	protected Turn createEndTime() {
+		Turn endTime = new Turn();
+		int turnsPerMovement = getDurationInTurns();
+		endTime.setTurnNumber(startTime.getTurnNumber() + turnsPerMovement);
+		return endTime;
+	}
+
+	protected MapCoordinates createDestination() {
+		MapCoordinates coordinates = objectToMove.getCoordinates();
+		MapCoordinates destination = new MapCoordinates(coordinates);
+		IPoint point = direction.getPoint();
+		destination.x += point.x();
+		destination.y += point.y();
+		return destination;
+	}
+
+	protected void sendMessage() {
+		String message = toJsonString();
+		GameClient.sendMessage(message);
+	}
+	
+	public String toJsonString() {
+		Writer writer = PlayN.json().newWriter();
+		Writer mainObject = writer.object();
+		mainObject.value("message", "move");
+		Writer start = mainObject.object("start");
+		start.value("turn", startTime.getTurnNumber());
+		start.value("x", objectToMove.getCoordinates().x);
+		start.value("y", objectToMove.getCoordinates().y);
+		start.end();
+		Writer end = mainObject.object("end");
+		end.value("turn", endTime.getTurnNumber());
+		end.value("x", destination.x);
+		end.value("y", destination.y);
+		end.end();
+		mainObject.end();
+		String string = writer.write();
+		return string;
 	}
 
 	protected void updateObjectToMove() {
@@ -126,6 +173,10 @@ public class MoveCommand implements Command {
 	@Override
 	public Turn getScheduledTime() {
 		return createdTime;
+	}
+
+	protected Player getObjectToMove() {
+		return objectToMove;
 	}
 
 }

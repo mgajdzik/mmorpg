@@ -3,6 +3,9 @@
 	<name>game-html</name>
 	<comment></comment>
 	<projects>
+		<project>game-core</project>
+		<project>playn-core</project>
+		<project>playn-html</project>
 	</projects>
 	<buildSpec>
 		<buildCommand>

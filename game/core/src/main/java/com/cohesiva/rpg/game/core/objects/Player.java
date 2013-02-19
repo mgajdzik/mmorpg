@@ -52,6 +52,7 @@ public class Player extends MultiLayerIsoObject {
 	private static int[] stopFrames = { 0, 1, 2, 3, 2, 1 };
 	private Point shiftAgainstCenterOfCurrentLocation = new Point();
 	private boolean moving;
+	private int id;
 
 	@Override
 	public List<TileDefinition> getTileDefinitions() {
@@ -103,6 +104,14 @@ public class Player extends MultiLayerIsoObject {
 
 	public void setDirection(Direction direction) {
 		this.direction = direction;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getId() {
+		return id;
 	}
 
 }

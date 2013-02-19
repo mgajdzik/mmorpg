@@ -1,8 +1,16 @@
-<?xml version="1.0" encoding="UTF-8"?>
-<project-modules id="moduleCoreId" project-version="1.5.0">
+<?xml version="1.0" encoding="UTF-8"?><project-modules id="moduleCoreId" project-version="1.5.0">
     <wb-module deploy-name="game-html">
         <wb-resource deploy-path="/WEB-INF/classes" source-path="/src/main/java"/>
-        <wb-resource deploy-path="/" source-path="/src/main/webapp"/>
+        <wb-resource deploy-path="/" source-path="/src/main/webapp" tag="defaultRootSource"/>
+        <dependent-module archiveName="game-core.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/game-core/game-core">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="playn-core.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/playn-core/playn-core">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
+        <dependent-module archiveName="playn-html.jar" deploy-path="/WEB-INF/lib" handle="module:/resource/playn-html/playn-html">
+            <dependency-type>uses</dependency-type>
+        </dependent-module>
         <property name="java-output-path" value="/game-html/src/main/webapp/WEB-INF/classes"/>
         <property name="context-root" value="/"/>
     </wb-module>
