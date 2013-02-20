@@ -16,6 +16,7 @@ import playn.core.Json.Array;
 import playn.core.Json.Object;
 import playn.core.PlayN;
 import playn.core.ResourceCallback;
+import playn.core.util.Callback;
 
 public class TileLibrary {
 
@@ -29,28 +30,28 @@ public class TileLibrary {
 
 	private Map<String, Map<String, List<TileDefinition>>> tileLibraries = new HashMap<String, Map<String, List<TileDefinition>>>();
 
-	public static void createLibrary(final ResourceCallback<TileLibrary> callback) {
+	public static void createLibrary(final Callback<TileLibrary> callback) {
 		if (instance != null && success == true) {
-			callback.done(instance);
+			callback.onSuccess(instance);
 			return;
 		}
 		success = true;
-		PlayN.assets().getText("assets.json", new ResourceCallback<String>() {
+		PlayN.assets().getText("assets.json", new Callback<String>() {
 
 			@Override
-			public void error(Throwable err) {
-				callback.error(err);
+			public void onFailure(Throwable err) {
+				callback.onFailure(err);
 			}
 
 			@Override
-			public void done(String resource) {
+			public void onSuccess(String resource) {
 				Json.Object mainAssetsConfig = PlayN.json().parse(resource);
 				loadMainAssetConfiguration(mainAssetsConfig, callback);
 			}
 		});
 	}
 
-	private static void loadMainAssetConfiguration(Json.Object mainAssetsConfig, final ResourceCallback<TileLibrary> callback) {
+	private static void loadMainAssetConfiguration(Json.Object mainAssetsConfig, final Callback<TileLibrary> callback) {
 		Json.Object assets = mainAssetsConfig.getObject("assets");
 		final Array assetFiles = assets.getArray("assetFile");
 
@@ -59,16 +60,16 @@ public class TileLibrary {
 		final IntRef count = new IntRef();
 		for (int i = 0; i < assetFiles.length(); i++) {
 			final String filePath = assetFiles.getObject(i).getObject("@attributes").getString("name");
-			PlayN.assets().getText(filePath, new ResourceCallback<String>() {
+			PlayN.assets().getText(filePath, new Callback<String>() {
 
 				@Override
-				public void error(Throwable err) {
-					callback.error(err);
+				public void onFailure(Throwable err) {
+					callback.onFailure(err);
 					success = false;
 				}
 
 				@Override
-				public void done(String resource) {
+				public void onSuccess(String resource) {
 					if (!success) {
 						// there was an error in one of the previous calls, so ignore any further successes
 						return;
@@ -78,7 +79,7 @@ public class TileLibrary {
 					loadAssetConfiguration(assetConfig, filePath, callback);
 					if (count.value == assetFiles.length()) {
 						preloadImages();
-						callback.done(instance);
+						callback.onSuccess(instance);
 					}
 				}
 			});
@@ -96,7 +97,7 @@ public class TileLibrary {
 		}
 	}
 
-	private static void loadAssetConfiguration(Json.Object assetConfig, String filePath, ResourceCallback<TileLibrary> callback) {
+	private static void loadAssetConfiguration(Json.Object assetConfig, String filePath, Callback<TileLibrary> callback) {
 		Object assetLibraryJson = assetConfig.getObject("assetLibrary");
 		String libraryName = assetLibraryJson.getObject("@attributes").getString("name");
 		Array assetGroupsJson = assetLibraryJson.getArray("assetGroup");
