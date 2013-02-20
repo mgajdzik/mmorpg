@@ -1,1 +1,7 @@
-/target
+target/
+.settings/
+.metadata/
+.classpath
+.project
+.gwt/
+gwt-unitCache/
