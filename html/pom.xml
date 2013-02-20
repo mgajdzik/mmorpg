@@ -15,6 +15,7 @@
 	<properties>
 		<gwt.module>com.cohesiva.rpg.game.RpgClient</gwt.module>
 		<gwt.name>game</gwt.name>
+		<m2eclipse.wtp.contextRoot>/</m2eclipse.wtp.contextRoot>
 	</properties>
 
 	<dependencies>
